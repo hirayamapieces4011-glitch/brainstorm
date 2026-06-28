@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>名詞ガチャ × ブレスト</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f14;
+    --surface: #18181f;
+    --border: #2a2a35;
+    --accent: #c8ff57;
+    --accent2: #7b61ff;
+    --text: #e8e8f0;
+    --muted: #6e6e88;
+    --card: #1e1e28;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px 80px;
+  }
+
+  header { text-align: center; margin-bottom: 56px; }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .gacha-zone {
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 40px;
+  }
+
+  .noun-pair {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .noun-card {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 20px;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .noun-card.lit { border-color: var(--accent); transform: scale(1.02); }
+
+  .noun-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .noun-word {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    min-height: 36px;
+    transition: opacity 0.15s;
+  }
+
+  .plus { font-size: 28px; color: var(--muted); font-weight: 300; flex-shrink: 0; }
+
+  .btn-row { display: flex; gap: 12px; }
+
+  .btn {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-gacha { background: var(--accent); color: #0f0f14; }
+  .btn-generate { background: var(--accent2); color: #fff; }
+
+  /* 広告バナー */
+  .ad-banner {
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: 28px;
+    background: #1a1a26;
+    border: 1px dashed #3a3a50;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .ad-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex-shrink: 0;
+    background: #2a2a3a;
+    padding: 3px 7px;
+    border-radius: 4px;
+  }
+
+  .ad-content {
+    flex: 1;
+    font-size: 13px;
+    color: #8080a0;
+    text-align: center;
+  }
+
+  .ad-content strong { color: #a0a0c0; }
+
+  .ad-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+    padding: 4px;
+  }
+
+  /* 結果ゾーン */
+  .results-zone { width: 100%; max-width: 640px; }
+
+  .results-header {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .results-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .idea-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 14px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .idea-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .idea-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .btn-save {
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-save:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-save.saved { background: var(--accent); color: #0f0f14; border-color: var(--accent); }
+
+  .idea-desc { font-size: 14px; line-height: 1.7; color: #b0b0c8; }
+
+  /* 保存リスト */
+  .saved-zone {
+    width: 100%;
+    max-width: 640px;
+    margin-top: 48px;
+  }
+
+  .saved-header {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .saved-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .saved-badge {
+    background: var(--accent2);
+    color: #fff;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  .saved-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    animation: fadeUp 0.25s ease both;
+  }
+
+  .saved-card-body { flex: 1; }
+
+  .saved-nouns {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .saved-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .saved-desc { font-size: 13px; color: #8888a8; line-height: 1.6; }
+
+  .btn-unsave {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 18px;
+    flex-shrink: 0;
+    padding: 2px 4px;
+    transition: color 0.15s;
+  }
+
+  .btn-unsave:hover { color: #ff6b6b; }
+
+  .saved-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 32px;
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  .dot-anim::after {
+    content: '';
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+
+  @keyframes dots {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+  }
+
+  .error-msg {
+    color: #ff6b6b;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: #0f0f14;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* アップグレードモーダル */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px 32px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    animation: fadeUp 0.25s ease;
+  }
+
+  .modal-icon { font-size: 40px; margin-bottom: 16px; }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .modal-desc {
+    font-size: 14px;
+    color: #8888a8;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .modal-desc strong { color: var(--accent); }
+
+  .modal-btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: opacity 0.15s;
+  }
+
+  .modal-btn-primary:hover { opacity: 0.85; }
+
+  .modal-btn-secondary {
+    width: 100%;
+    padding: 12px;
+    background: none;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+
+  .modal-btn-secondary:hover { color: var(--text); }
+
+  /* 保存リストの上限バー */
+  .save-limit-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .save-limit-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .save-limit-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  .save-limit-fill.full { background: #ff6b6b; }
+
+  footer {
+    margin-top: 64px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  footer a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">App Brainstorming Tool</p>
+  <h1>ニッチこそ、<br><span>正義。</span></h1>
+  <p class="subtitle">ランダムな名詞の組み合わせから、AIが<br>アプリのアイデアを3つ提案します。</p>
+</header>
+
+<div class="gacha-zone">
+  <div class="noun-pair">
+    <div class="noun-card" id="card-a">
+      <div class="noun-label">名詞 A</div>
+      <div class="noun-word" id="noun-a">？</div>
+    </div>
+    <div class="plus">＋</div>
+    <div class="noun-card" id="card-b">
+      <div class="noun-label">名詞 B</div>
+      <div class="noun-word" id="noun-b">？</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-gacha" id="btn-gacha" onclick="drawNouns()">🎲 名詞を引く</button>
+    <button class="btn btn-generate" id="btn-generate" onclick="generateIdeas()" disabled>✨ アイデアを出す</button>
+  </div>
+</div>
+
+<div id="ad-slot" style="display:none; width:100%; max-width:640px; margin-bottom:28px;"></div>
+
+<div class="results-zone" id="results-zone" style="display:none">
+  <div class="results-header">AIの提案</div>
+  <div id="results-content"></div>
+</div>
+
+<div class="saved-zone" id="saved-zone">
+  <div class="saved-header">
+    保存したアイデア
+    <span class="saved-badge" id="saved-count">0</span>
+  </div>
+  <div class="save-limit-bar">
+    <span id="save-limit-text">0 / 3 件</span>
+    <div class="save-limit-track">
+      <div class="save-limit-fill" id="save-limit-fill" style="width:0%"></div>
+    </div>
+    <span style="font-size:11px; color:var(--muted);">無料枠</span>
+  </div>
+  <div id="saved-list">
+    <div class="saved-empty">まだ保存したアイデアがありません。<br>気に入ったアイデアの「保存」を押してみてください。</div>
+  </div>
+</div>
+
+<!-- アップグレードモーダル -->
+<div class="modal-overlay" id="upgrade-modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-icon">🔒</div>
+    <div class="modal-title">無料枠がいっぱいです</div>
+    <div class="modal-desc">
+      無料プランでは<strong>3件まで</strong>保存できます。<br>
+      プレミアムプランにアップグレードすると、保存件数が無制限になります。
+    </div>
+    <button class="modal-btn-primary" onclick="closeModal()">⚡ アップグレードする（準備中）</button>
+    <button class="modal-btn-secondary" onclick="closeModal()">今はしない</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <a href="privacy.html">プライバシーポリシー</a>
+  <span>·</span>
+  <a href="contact.html">お問い合わせ</a>
+  <span>·</span>
+  <span>© 2026 App Brainstorming Tool</span>
+</footer>
+
+<script>
+// ============================================================
+// 名詞リスト（510個）
+// ============================================================
+const NOUNS = [
+  "カメラ","地図","音楽","日記","レシピ","天気","時計","カレンダー","メモ","チャット",
+  "本","映画","ゲーム","旅行","食事","運動","睡眠","お金","学習","写真",
+  "植物","ペット","料理","買い物","友達","家族","仕事","健康","趣味","ニュース",
+  "電車","自転車","歩数","水分","呼吸","星空","美術館","図書館","コーヒー","読書",
+  "瞑想","ストレッチ","ゴミ","節電","貯金","献立","間取り","天体","植樹","釣り",
+  "登山","波","砂漠","森","駅","空港","病院","学校","公園","カフェ",
+  "洗濯","掃除","入浴","散歩","昼寝","日光","風","雨","雪","霧",
+  "花","草","木","川","海","山","空","雲","月","太陽",
+  "アレルギー","体温","血圧","体重","食欲","疲労","姿勢","視力","聴力","肌",
+  "香り","味","音","光","温度","湿度","気圧","振動","色","形",
+  "パン","米","麺","肉","魚","野菜","果物","スープ","サラダ","デザート",
+  "ワイン","ビール","お茶","ジュース","水","牛乳","コーラ","酢","塩","砂糖",
+  "スパイス","オイル","バター","チーズ","卵","豆腐","味噌","醤油","ソース","マヨネーズ",
+  "レストラン","ホテル","映画館","スタジアム","体育館","銭湯","寺","神社",
+  "城","タワー","橋","港","灯台","牧場","農場","工場","市場","商店街",
+  "地下鉄","バス","タクシー","船","飛行機","ロケット","宇宙","惑星","衛星","彗星",
+  "医者","教師","料理人","音楽家","画家","作家","農家","漁師","建築家","エンジニア",
+  "子供","老人","ボランティア","観光客","移民","難民","政治家","起業家","投資家","芸術家",
+  "コミュニティ","チーム","組合","学会","NGO","政府","議会","裁判","選挙","税金",
+  "AI","センサー","ロボット","ドローン","API","クラウド","ブロックチェーン","暗号","アルゴリズム","データ",
+  "スマホ","タブレット","パソコン","サーバー","ネットワーク","Wifi","Bluetooth","GPS","NFC","QRコード",
+  "太陽光","風力","バッテリー","充電","半導体","チップ","プロセッサ","メモリ","ストレージ",
+  "AR","VR","メタバース","アバター","NFT","トークン","ウォレット","プログラム","コード","デバッグ",
+  "機械学習","深層学習","ニューラルネット","画像認識","音声認識","翻訳","予測","最適化","シミュレーション","モデル",
+  "セキュリティ","暗号化","認証","パスワード","バイオメトリクス","顔認証","指紋","ハッキング","マルウェア","ファイアウォール",
+  "スマートホーム","IoT","スマートウォッチ","ウェアラブル","自動運転","電気自動車","スマートグリッド","デジタルツイン","エッジ","フォグ",
+  "5G","衛星通信","量子コンピュータ","ナノテク","バイオテク","遺伝子","ゲノム","タンパク質","ウイルス","ワクチン",
+  "3Dプリンタ","レーザー","赤外線","超音波","磁気","電磁波","プラズマ","核融合","宇宙開発","テレポート",
+  "フォント","色彩","レイアウト","アニメーション","イラスト","グラフィック","ロゴ","ブランド","UI","UX",
+  "プロトタイプ","ワイヤーフレーム","スケッチ","モックアップ","デザインシステム","コンポーネント","テーマ","スタイル","パターン","テクスチャ",
+  "スタートアップ","資金調達","ピッチ","MVP","グロース","マーケティング","広告","SEO","SNS","インフルエンサー",
+  "売上","利益","コスト","予算","請求","領収書","契約","特許","商標","著作権",
+  "在庫","物流","配送","倉庫","サプライチェーン","輸出","輸入","関税","為替","仮想通貨",
+  "地震","台風","洪水","干ばつ","山火事","氷河","珊瑚","マングローブ","湿地","砂漠化",
+  "CO2","排出","再生可能","リサイクル","堆肥","有機","無農薬","生物多様性","絶滅","保護区",
+  "サッカー","野球","テニス","バスケ","水泳","マラソン","ヨガ","ダンス","格闘技","eスポーツ",
+  "ライブ","フェス","ポッドキャスト","動画","ストリーミング","漫画","アニメ","ドラマ","お笑い","落語",
+  "数学","物理","化学","生物","地学","歴史","哲学","心理","社会学","経済学",
+  "統計","実験","観察","仮説","論文","引用","査読","図鑑","辞書",
+  "迷路","パズル","占い","夢","記憶","感情","直感","偶然","運命","奇跡",
+  "秘密","噂","伝説","神話","民話","俳句","詩","小説","脚本","歌詞",
+  "地下","洞窟","廃墟","遺跡","化石","骨","血液","涙","汗","息",
+  "影","反射","蜃気楼","オーロラ","虹","稲妻","霰","露","霜","氷",
+  "チャットボット","推薦","検索","フィルター","ダッシュボード","通知","タグ","ハッシュ","フィード","タイムライン",
+  "マップ","ルート","渋滞","乗り換え","時刻表","予約","キャンセル","リマインダー","タスク","ワークフロー",
+  "スクリーンタイム","集中","ポモドーロ","習慣","目標","進捗","ログ","レポート","グラフ","カウンター",
+  "字幕","ナレーション","音声合成","文字起こし","要約","分類","クラスタ","ランキング","スコア",
+  "シェア","コラボ","コメント","レビュー","評価","いいね","フォロー","ブロック","招待","紹介",
+  "サブスク","フリーミアム","課金","ポイント","クーポン","割引","キャッシュバック","ギフト","チップ","寄付",
+  "アップデート","バックアップ","同期","エクスポート","インポート","変換","圧縮","署名","スタンプ",
+  "デバイス","周辺機器","ケーブル","アダプタ","ハブ","ルーター","モデム","アンテナ","基地局","中継"
+];
+
+// ============================================================
+// 広告データ（ダミー）
+// ============================================================
+const ADS = [
+  { text: '<strong>🚀 SupaBase</strong> — バックエンド不要でアプリ開発。無料プランで今すぐ始める', url: '#' },
+  { text: '<strong>🎨 Figma</strong> — プロトタイプをすぐデザイン。チームで無料から使える', url: '#' },
+  { text: '<strong>☁️ Vercel</strong> — 作ったアプリを秒速で公開。個人利用は完全無料', url: '#' },
+  { text: '<strong>📦 npm</strong> — 300万以上のパッケージ。あなたのアイデアに必要なものが全部ある', url: '#' },
+  { text: '<strong>🤖 Anthropic API</strong> — AIをあなたのアプリに。今すぐAPIキーを取得', url: '#' },
+];
+
+// ============================================================
+// 状態管理
+// ============================================================
+let currentA = null;
+let currentB = null;
+let drawCount = 0;
+const AD_INTERVAL = 3; // 何回ごとに広告を出すか
+
+// 保存データはlocalStorageに
+function loadSaved() {
+  try { return JSON.parse(localStorage.getItem('brainstorm_saved') || '[]'); }
+  catch { return []; }
+}
+function storeSaved(list) {
+  localStorage.setItem('brainstorm_saved', JSON.stringify(list));
+}
+
+// ============================================================
+// トースト通知
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ============================================================
+// 広告バナー表示
+// ============================================================
+function showAd() {
+  const slot = document.getElementById('ad-slot');
+  const ad = ADS[Math.floor(Math.random() * ADS.length)];
+  slot.style.display = 'block';
+  slot.innerHTML = `
+    <div class="ad-banner">
+      <span class="ad-label">広告</span>
+      <span class="ad-content">${ad.text}</span>
+      <button class="ad-close" onclick="document.getElementById('ad-slot').style.display='none'" title="閉じる">✕</button>
+    </div>`;
+}
+
+// ============================================================
+// 名詞を引く
+// ============================================================
+function drawNouns() {
+  const btnGacha = document.getElementById('btn-gacha');
+  btnGacha.disabled = true;
+  document.getElementById('noun-a').style.opacity = '0';
+  document.getElementById('noun-b').style.opacity = '0';
+
+  setTimeout(() => {
+    let a, b;
+    do {
+      a = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+      b = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+    } while (a === b);
+
+    currentA = a; currentB = b;
+    document.getElementById('noun-a').textContent = a;
+    document.getElementById('noun-b').textContent = b;
+    document.getElementById('noun-a').style.opacity = '1';
+    document.getElementById('noun-b').style.opacity = '1';
+
+    ['card-a','card-b'].forEach(id => {
+      document.getElementById(id).classList.add('lit');
+      setTimeout(() => document.getElementById(id).classList.remove('lit'), 600);
+    });
+
+    document.getElementById('btn-generate').disabled = false;
+    document.getElementById('results-zone').style.display = 'none';
+    btnGacha.disabled = false;
+
+    // 広告インターバル
+    drawCount++;
+    if (drawCount % AD_INTERVAL === 0) {
+      showAd();
+    } else {
+      document.getElementById('ad-slot').style.display = 'none';
+    }
+  }, 200);
+}
+
+// ============================================================
+// AIアイデア生成
+// ============================================================
+async function generateIdeas() {
+  if (!currentA || !currentB) return;
+
+  const zone = document.getElementById('results-zone');
+  const content = document.getElementById('results-content');
+  zone.style.display = 'block';
+  content.innerHTML = '<div class="loading"><span class="dot-anim">AIが考え中</span></div>';
+  document.getElementById('btn-generate').disabled = true;
+  document.getElementById('btn-gacha').disabled = true;
+
+  const prompt = `あなたはアプリ開発のブレインストーミングアシスタントです。
+「${currentA}」と「${currentB}」という2つの名詞を組み合わせて、ユニークで実用的なアプリのアイデアを3つ提案してください。
+
+必ず以下のJSON形式のみで返してください（マークダウンや説明文は一切不要）：
+[
+  {"title": "アプリ名", "description": "どんなアプリか2〜3文で説明"},
+  {"title": "アプリ名", "description": "どんなアプリか2〜3文で説明"},
+  {"title": "アプリ名", "description": "どんなアプリか2〜3文で説明"}
+]`;
+
+  try {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content.map(i => i.text || '').join('');
+    const ideas = JSON.parse(text.replace(/```json|```/g, '').trim());
+
+    content.innerHTML = '';
+    ideas.forEach((idea, i) => {
+      const saved = loadSaved();
+      const alreadySaved = saved.some(s => s.title === idea.title);
+      const card = document.createElement('div');
+      card.className = 'idea-card';
+      card.style.animationDelay = `${i * 0.1}s`;
+      card.innerHTML = `
+        <div class="idea-card-header">
+          <div class="idea-title">${idea.title}</div>
+          <button class="btn-save ${alreadySaved ? 'saved' : ''}"
+            onclick="toggleSave(this, '${escapeAttr(idea.title)}', '${escapeAttr(idea.description)}', '${escapeAttr(currentA)}', '${escapeAttr(currentB)}')">
+            ${alreadySaved ? '✓ 保存済み' : '＋ 保存'}
+          </button>
+        </div>
+        <div class="idea-desc">${idea.description}</div>`;
+      content.appendChild(card);
+    });
+  } catch (e) {
+    content.innerHTML = '<div class="error-msg">アイデアの取得に失敗しました。もう一度試してみてください。</div>';
+  } finally {
+    document.getElementById('btn-generate').disabled = false;
+    document.getElementById('btn-gacha').disabled = false;
+  }
+}
+
+// ============================================================
+// 設定
+// ============================================================
+const FREE_LIMIT = 3;
+
+// ============================================================
+// 保存トグル
+// ============================================================
+function escapeAttr(str) {
+  return str.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+}
+
+function toggleSave(btn, title, desc, nounA, nounB) {
+  let saved = loadSaved();
+  const idx = saved.findIndex(s => s.title === title);
+  if (idx === -1) {
+    // 上限チェック
+    if (saved.length >= FREE_LIMIT) {
+      showUpgradeModal();
+      return;
+    }
+    saved.push({ title, desc, nounA, nounB, savedAt: Date.now() });
+    btn.textContent = '✓ 保存済み';
+    btn.classList.add('saved');
+    showToast('💾 アイデアを保存しました');
+  } else {
+    saved.splice(idx, 1);
+    btn.textContent = '＋ 保存';
+    btn.classList.remove('saved');
+    showToast('削除しました');
+  }
+  storeSaved(saved);
+  renderSaved();
+}
+
+function removeSaved(title) {
+  let saved = loadSaved().filter(s => s.title !== title);
+  storeSaved(saved);
+  renderSaved();
+  showToast('削除しました');
+}
+
+// ============================================================
+// アップグレードモーダル
+// ============================================================
+function showUpgradeModal() {
+  document.getElementById('upgrade-modal').style.display = 'flex';
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('upgrade-modal')) {
+    document.getElementById('upgrade-modal').style.display = 'none';
+  }
+}
+
+// ============================================================
+// 保存リスト描画
+// ============================================================
+function renderSaved() {
+  const saved = loadSaved();
+  const list = document.getElementById('saved-list');
+  const badge = document.getElementById('saved-count');
+  const limitText = document.getElementById('save-limit-text');
+  const limitFill = document.getElementById('save-limit-fill');
+
+  badge.textContent = saved.length;
+  limitText.textContent = `${saved.length} / ${FREE_LIMIT} 件`;
+  const pct = Math.min((saved.length / FREE_LIMIT) * 100, 100);
+  limitFill.style.width = pct + '%';
+  limitFill.classList.toggle('full', saved.length >= FREE_LIMIT);
+
+  if (saved.length === 0) {
+    list.innerHTML = '<div class="saved-empty">まだ保存したアイデアがありません。<br>気に入ったアイデアの「保存」を押してみてください。</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  [...saved].reverse().forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'saved-card';
+    card.innerHTML = `
+      <div class="saved-card-body">
+        <div class="saved-nouns">${item.nounA} ＋ ${item.nounB}</div>
+        <div class="saved-title">${item.title}</div>
+        <div class="saved-desc">${item.desc}</div>
+      </div>
+      <button class="btn-unsave" onclick="removeSaved('${escapeAttr(item.title)}')" title="削除">✕</button>`;
+    list.appendChild(card);
+  });
+}
+
+// 初期描画
+renderSaved();
+</script>
+</body>
+</html>
